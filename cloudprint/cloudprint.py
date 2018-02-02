@@ -395,7 +395,7 @@ def sync_printers(cups_connection, cpp):
         remote_printers[printer_name].delete()
 
 
-def process_job(cups_connection, cpp, printer, job):
+def process_job(cups_connection, cpp, printer, job, pgsize):
     global num_retries
 
     try:
@@ -410,6 +410,10 @@ def process_job(cups_connection, cpp, printer, job):
 
         options = dict((str(k), str(v)) for k, v in list(options.items()))
         options['job-originating-user-name'] = job['ownerId']
+        
+        # Set page size
+        if(pgsize != ""):
+            options['PageSize'] = pgsize
 
         # Cap the title length to 255, or cups will complain about invalid
         # job-name
@@ -541,6 +545,12 @@ def parse_args():
         default='',
         help='one-word site-name that will prefix printers',
     )
+    parser.add_argument(
+        '--page-size',
+        dest='pageSize',
+        default='',
+        help='sets the page size for the printer'
+    )
 
     return parser.parse_args()
 
@@ -644,7 +654,7 @@ def main():
             process_jobs(cups_connection, cpp)
 
     else:
-        process_jobs(cups_connection, cpp)
+        process_jobs(cups_connection, cpp, args.pagesize)
 
 
 if __name__ == '__main__':
